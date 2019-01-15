@@ -48,12 +48,6 @@ import string
 from icon_defs import *
 from X10 import *
 
-# Setup GPIO pin BCM GPIO04
-import RPi.GPIO as GPIO
-GPIO.setmode( GPIO.BCM )
-GPIO.setup( 4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN )	# Next 
-GPIO.setup( 17, GPIO.IN, pull_up_down=GPIO.PUD_DOWN )	# Shutdown
-
 mouseX, mouseY = 0, 0
 mode = 'w'		# Default to weather mode.
 
@@ -711,51 +705,10 @@ if myDisp.UpdateWeather() == False:
 	print 'Error: no data from Weather.com.'
 	running = False
 
-# Attach GPIO callback to our new button input on pin #4.
-GPIO.add_event_detect( 4, GPIO.RISING, callback=btnNext, bouncetime=400)
-#GPIO.add_event_detect( 17, GPIO.RISING, callback=btnShutdown, bouncetime=100)
 btnShutdownCnt = 0
-
-if GPIO.input( 17 ):
-	print "Warning: Shutdown Switch is Active!"
-	myDisp.screen.fill( (0,0,0) )
-	icon = pygame.image.load(sd + 'shutdown.jpg')
-	(ix,iy) = icon.get_size()
-	myDisp.screen.blit( icon, (800/2-ix/2,400/2-iy/2) )
-	font = pygame.font.SysFont( "freesans", 40, bold=1 )
-	rf = font.render( "Please toggle shutdown siwtch.", True, (255,255,255) )
-	(tx1,ty1) = rf.get_size()
-	myDisp.screen.blit( rf, (800/2-tx1/2,iy+20) )
-	pygame.display.update()
-	pygame.time.wait( 1000 )
-	while GPIO.input( 17 ): pygame.time.wait(100)
-
-
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 while running:
-
-	# Debounce the shutdown switch. The main loop rnus at 100ms. So, if the 
-	# button (well, a switch really) counter "btnShutdownCnt" counts above
-	# 25 then the switch must have been on continuously for 2.5 seconds.
-	if GPIO.input( 17 ):
-		btnShutdownCnt += 1
-		if btnShutdownCnt > 25:
-			print "Shutdown!"
-			myDisp.screen.fill( (0,0,0) )
-			icon = pygame.image.load(sd + 'shutdown.jpg')
-			(ix,iy) = icon.get_size()
-			myDisp.screen.blit( icon, (800/2-ix/2,400/2-iy/2) )
-			font = pygame.font.SysFont( "freesans", 60, bold=1 )
-			rtm1 = font.render( "Shuting Down!", True, (255,255,255) )
-			(tx1,ty1) = rtm1.get_size()
-			myDisp.screen.blit( rtm1, (800/2-tx1/2,iy+20) )
-			pygame.display.update()
-			pygame.time.wait( 1000 )
-			#os.system("sudo shutdown -h now")
-			while GPIO.input( 17 ): pygame.time.wait(100)
-	else:
-		btnShutdownCnt = 0
 
 	# Look for and process keyboard events to change modes.
 	for event in pygame.event.get():
